@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EventContextAI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+06eb6ad20364985da02abab541e74c691febcf70")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+65b110f09376e5b37aeea6cb7e4b582fd305b845")]
 [assembly: System.Reflection.AssemblyProductAttribute("EventContextAI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EventContextAI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

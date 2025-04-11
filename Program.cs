@@ -17,9 +17,15 @@ if (app.Environment.IsDevelopment())
 
 string jsonContent = File.ReadAllText("D:\\WebDev\\EventContextAI\\secrets\\config.json");
 
-// Parse the JSON to get the api_key value
 var config = JsonSerializer.Deserialize<JsonDocument>(jsonContent);
-string apiKey = config.RootElement.GetProperty("api_key").GetString();
+string? apiKey = null;
+
+// Try to get the api_key property safely
+if (config != null && config.RootElement.TryGetProperty("api_key", out JsonElement apiKeyElement) 
+    && apiKeyElement.ValueKind != JsonValueKind.Null)
+{
+    apiKey = apiKeyElement.GetString();
+}
 
 // Create client with the API key
 ChatClient client = new(
@@ -29,11 +35,16 @@ ChatClient client = new(
 
 app.UseHttpsRedirection();
 
-app.MapGet("/chat", async () => 
+app.MapGet("/chat", (string prompt = null) => 
 {
-    ChatCompletion completion = client.CompleteChat("Say 'this is a ballssssssssssss.'");
+    string userPrompt = string.IsNullOrEmpty(prompt) 
+        ? "Say 'this is a ball.'" 
+        : prompt;
+        
+    ChatCompletion completion = client.CompleteChat(userPrompt);
     return new { Response = completion.Content[0].Text };
 })
 .WithName("GetChatResponse");
+// http://localhost:5248/chat?prompt=
 
 app.Run();
