@@ -35,7 +35,7 @@ ChatClient client = new(
 
 app.UseHttpsRedirection();
 
-app.MapGet("/chat", (string prompt = null) => 
+app.MapGet("/chat", (string? prompt = null) => 
 {
     string userPrompt = string.IsNullOrEmpty(prompt) 
         ? "Say 'this is a ball.'" 
