@@ -34,3 +34,5 @@ d:\WebDev\EventContextAI\obj\Debug\net9.0\refint\EventContextAI.dll
 d:\WebDev\EventContextAI\obj\Debug\net9.0\EventContextAI.pdb
 D:\WebDev\EventContextAI\obj\Debug\net9.0\EventContextAI.genruntimeconfig.cache
 D:\WebDev\EventContextAI\obj\Debug\net9.0\ref\EventContextAI.dll
+d:\WebDev\EventContextAI\bin\Debug\net9.0\secrets\config.json
+d:\WebDev\EventContextAI\obj\Debug\net9.0\EventContextAI.sourcelink.json
