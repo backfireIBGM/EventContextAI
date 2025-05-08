@@ -9,6 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" Version="2.2.0-beta.4" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.4" />
+    <PackageReference Include="NSwag.AspNetCore" Version="14.3.0" />
     <PackageReference Include="OpenAI" Version="2.2.0-beta.4" />
   </ItemGroup>
 
