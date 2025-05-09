@@ -39,6 +39,7 @@ d:\WebDev\EventContextAI\obj\Debug\net9.0\EventContextAI.sourcelink.json
 d:\WebDev\EventContextAI\bin\Debug\net9.0\Azure.AI.OpenAI.dll
 d:\WebDev\EventContextAI\bin\Debug\net9.0\Azure.Core.dll
 d:\WebDev\EventContextAI\bin\Debug\net9.0\Microsoft.Bcl.AsyncInterfaces.dll
+<<<<<<< HEAD
 d:\WebDev\EventContextAI\bin\Debug\net9.0\mydata.json
 d:\WebDev\EventContextAI\bin\Debug\net9.0\test.json
 d:\WebDev\EventContextAI\bin\Debug\net9.0\rocket_launches.json
@@ -53,3 +54,5 @@ D:\WebDev\EventContextAI\bin\Debug\net9.0\Microsoft.Extensions.Logging.dll
 D:\WebDev\EventContextAI\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
 D:\WebDev\EventContextAI\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
 D:\WebDev\EventContextAI\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
+=======
+>>>>>>> 47a40bcbe2bad124ebeddc10d07724af324a97bc

@@ -1,6 +1,10 @@
 {
   "version": 2,
+<<<<<<< HEAD
   "dgSpecHash": "tXSF4eKZfzQ=",
+=======
+  "dgSpecHash": "uilCu1I+zt4=",
+>>>>>>> 47a40bcbe2bad124ebeddc10d07724af324a97bc
   "success": true,
   "projectFilePath": "D:\\WebDev\\EventContextAI\\EventContextAI.csproj",
   "expectedPackageFiles": [
