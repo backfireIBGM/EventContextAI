@@ -1,8 +1,6 @@
 using System.Text.Json;
 using OpenAI.Chat;
-using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,154 +34,87 @@ ChatClient client = new(
     apiKey: apiKey
 );
 
+string rocketInfoFile = "D:\\WebDev\\EventContextAI\\rocket_launches.json";
+string lastUpdateTimeFile = "D:\\WebDev\\EventContextAI\\last_update_time.txt";
 
-
-
-app.MapGet("/chat", (string? prompt = null) => 
-{
-    string userPrompt = string.IsNullOrEmpty(prompt) 
-        ? "Say 'this is a event.'" 
-        : prompt;
-        
-    ChatCompletion completion = client.CompleteChat(userPrompt);
-    return new { Response = completion.Content[0].Text };
-})
-.WithName("GetChatResponse");
-// http://localhost:5248/chat?prompt=Talk%20about%20baseball.
-
-
-
-// Define the file path as a constant
-string fileName = "D:\\WebDev\\EventContextAI\\test.json";
-
-app.MapGet("/api/json-file", async (HttpContext context) => 
+app.MapGet("/analyze-rocket-data", async (string? question = null) => 
 {
     try
     {
-        // Sanitize and validate the file path to prevent directory traversal attacks
-        // Convert relative path to absolute path in a safe way
-        string safePath = Path.GetFullPath(fileName);
-        
-        // Ensure the path ends with .json
-        if (!safePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        DateTime currentDate = DateTime.UtcNow;
+        bool justCreated = false;
+                
+        if (!File.Exists(lastUpdateTimeFile))
         {
-            safePath += ".json";
-        }
-        
-        // Check if file exists
-        if (!File.Exists(safePath))
-        {
-            return Results.NotFound($"File not found: {safePath}");
-        }
-        
-        // Read the JSON file
-        string jsonContent = await File.ReadAllTextAsync(safePath);
-        
-        // Set content type to application/json
-        context.Response.ContentType = "application/json";
-        
-        // Write the JSON content to the response
-        await context.Response.WriteAsync(jsonContent);
-        
-        return Results.Empty;
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Error processing JSON file: {ex.Message}");
-    }
-})
-.WithName("GetJsonFile");
-
-app.MapGet("/csv-data", async () => 
-{
-    try
-    {
-        // Check if file exists
-        if (!File.Exists(fileName))
-        {
-            return Results.NotFound($"File not found: {fileName}");
+            await File.WriteAllTextAsync(lastUpdateTimeFile, currentDate.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+            justCreated = true;
         }
 
-        // Read the CSV file
-        string[] csvLines = await File.ReadAllLinesAsync(fileName);
-        
-        if (csvLines.Length == 0)
+        DateTime lastUpdate = DateTime.Parse(await File.ReadAllTextAsync(lastUpdateTimeFile));
+
+        if (lastUpdate.AddMinutes(15) < currentDate || justCreated)
         {
-            return Results.Ok(new { Message = "CSV file is empty" });
+            await UpdateRocketInfoFileAsync(rocketInfoFile);
+            await File.WriteAllTextAsync(lastUpdateTimeFile, currentDate.ToString("yyyy-MM-ddTHH:mm:ssZ"));
         }
 
-        // Parse header
-        string[] headers = csvLines[0].Split(',');
+        // Read the JSON content from the file
+        string jsonContent = await File.ReadAllTextAsync(rocketInfoFile);
         
-        // Parse data rows
-        var data = new List<Dictionary<string, string>>();
-        for (int i = 1; i < csvLines.Length; i++)
-        {
-            var values = csvLines[i].Split(',');
-            var row = new Dictionary<string, string>();
-            
-            for (int j = 0; j < Math.Min(headers.Length, values.Length); j++)
-            {
-                row[headers[j]] = values[j];
-            }
-            
-            data.Add(row);
-        }
-
-        // Create prompt with CSV data context
-        string csvContext = $"CSV data from {Path.GetFileName(fileName)}:\n";
-        csvContext += string.Join("\n", csvLines.Take(Math.Min(10, csvLines.Length)));
-        if (csvLines.Length > 10)
-        {
-            csvContext += "\n... [additional data rows omitted] ...";
-        }
+        string noQuestion = $"Analyze this JSON data and provide a summary of the upcoming rocket launches hype them up too!:\n{jsonContent}\n" +
+            "Give credit to RocketLaunch.Live for the data, they are the source of the data. They do not live stream the launches, they are a data provider." +
+            "Say something like 'go to https://fdo.rocketlaunch.live/ for the raw data.' " +
+            "But don't list the data, just give a summary. " +
+            "Don't mention that it's JSON data or put it in JSON format unless asked. Most users don't know what JSON is.";
         
-        return Results.Ok(new { 
-            Headers = headers,
-            Data = data,
-            RowCount = csvLines.Length - 1
-        });
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Error processing CSV file: {ex.Message}");
-    }
-})
-.WithName("GetCSVData");
-// http://localhost:5248/csv-data
-
-// Add an endpoint to analyze the CSV data with OpenAI
-app.MapGet("/analyze-csv", async (string? question = null) => 
-{
-    try
-    {
-        if (!File.Exists(fileName))
-        {
-            return Results.NotFound($"File not found: {fileName}");
-        }
-
-        // Read the CSV file
-        string csvContent = await File.ReadAllTextAsync(fileName);
-        
-        // // Limit the size of the content to avoid exceeding token limits
-        // if (csvContent.Length > 10000)
-        // {
-        //     csvContent = csvContent.Substring(0, 10000) + "\n[Content truncated due to size]";
-        // }
+        string questionPrompt = $"Based on this JSON data, please answer the following question: {question}\n\n" +
+            $"JSON data:\n{jsonContent}.\n" +
+            "Give credit to RocketLaunch.Live for the data, they are the source of the data. They do not live stream the launches, they are a data provider." +
+            "Say something like 'go to https://fdo.rocketlaunch.live/ for the raw data.' " +
+            "But don't list the data, just give a summary, usless the user asks for raw data or something like that. " +
+            "Don't mention that it's JSON data or put it in JSON format unless asked. Most users don't know what JSON is.";
 
         string userPrompt = string.IsNullOrEmpty(question)
-            ? $"Analyze this CSV data and provide a summary:\n\n{csvContent}"
-            : $"Based on this CSV data, please answer the following question: {question}\n\nCSV data:\n{csvContent}";
+            ? noQuestion: questionPrompt;
             
         ChatCompletion completion = client.CompleteChat(userPrompt);
         return Results.Ok(new { Response = completion.Content[0].Text });
     }
     catch (Exception ex)
     {
-        return Results.Problem($"Error analyzing CSV file: {ex.Message}");
+        return Results.Problem($"Error analyzing JSON file: {ex.Message}");
     }
 })
-.WithName("AnalyzeCSVData");
-// http://localhost:5248/analyze-csv?question=Tell%20me%20about%20Moonlight%20Mirage%20Music%20Festival
+.WithName("AnalyzeRocketData");
+
+// http://localhost:5248/analyze-rocket-data
+// http://localhost:5248/analyze-rocket-data?question=Tell%20me%20about%20the%20next%20rocket%20launch.
+// http://localhost:5248/analyze-rocket-data?question=I%20want%20to%20go%20see%20a%20rocket%20fly,%20how,%20whare,%20when,%20what%20will%20I%20see?
+// http://localhost:5248/analyze-rocket-data?question=Tell%20me%20about%20the%20next%20human%20launch.
+
+async Task UpdateRocketInfoFileAsync(string path)
+{
+    try
+    {
+        const string jsonRocketLaunches = "https://fdo.rocketlaunch.live/json/launches/next/5";
+        
+        using (HttpClient client = new HttpClient())
+        {
+            HttpResponseMessage response = await client.GetAsync(jsonRocketLaunches);
+            response.EnsureSuccessStatusCode(); // Throws if not 200-299
+            
+            string responseBody = await response.Content.ReadAsStringAsync();
+            
+            // Write the response directly to the file
+            await File.WriteAllTextAsync(path, responseBody);
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error fetching or saving rocket launches: {ex.Message}");
+    }
+}
 
 app.Run();
+
+        // JsonDocument data = JsonDocument.Parse(Path.ReadAllText(rocketInfoFile));
